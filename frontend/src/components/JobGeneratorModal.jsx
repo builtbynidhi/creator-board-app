@@ -18,7 +18,7 @@ import {
 } from './ui/select';
 import { Sparkles, Loader2, Copy, CheckCircle2 } from 'lucide-react';
 
-const JobGeneratorModal = ({ isOpen, onClose }) => {
+const JobGeneratorModal = ({ isOpen, onClose, onJobGenerated }) => {
   const [formData, setFormData] = useState({
     job_title: '',
     company: '',
@@ -81,6 +81,13 @@ const JobGeneratorModal = ({ isOpen, onClose }) => {
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleDone = () => {
+    if (result && onJobGenerated) {
+      onJobGenerated(result);
+    }
+    handleClose();
   };
 
   const handleClose = () => {
@@ -343,7 +350,7 @@ const JobGeneratorModal = ({ isOpen, onClose }) => {
                 </Button>
                 <Button
                   type="button"
-                  onClick={handleClose}
+                  onClick={handleDone}
                   className="flex-1 h-11 rounded-lg bg-blue-600 hover:bg-blue-700"
                 >
                   Done
