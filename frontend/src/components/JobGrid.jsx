@@ -2,25 +2,25 @@ import React from 'react';
 import JobCard from './JobCard';
 import { Inbox } from 'lucide-react';
 
-const JobGrid = ({ jobs, onViewDetails, onApply, appliedJobs, isLoading }) => {
-  // Skeleton loader component
-  const SkeletonCard = () => (
-    <div className="bg-white rounded-2xl border border-slate-200 p-5 animate-pulse">
-      <div className="flex justify-between mb-3">
-        <div className="h-6 w-24 bg-slate-200 rounded-lg"></div>
-        <div className="h-4 w-16 bg-slate-200 rounded"></div>
-      </div>
-      <div className="h-6 w-3/4 bg-slate-200 rounded mb-2"></div>
-      <div className="h-4 w-1/2 bg-slate-200 rounded mb-3"></div>
-      <div className="h-16 bg-slate-200 rounded mb-4"></div>
-      <div className="h-20 bg-slate-100 rounded-xl mb-4"></div>
-      <div className="flex gap-2">
-        <div className="h-10 flex-1 bg-slate-200 rounded-xl"></div>
-        <div className="h-10 flex-1 bg-slate-200 rounded-xl"></div>
-      </div>
+// Skeleton loader component - defined outside of JobGrid
+const SkeletonCard = () => (
+  <div className="bg-white rounded-2xl border border-slate-200 p-5 animate-pulse">
+    <div className="flex justify-between mb-3">
+      <div className="h-6 w-24 bg-slate-200 rounded-lg"></div>
+      <div className="h-4 w-16 bg-slate-200 rounded"></div>
     </div>
-  );
+    <div className="h-6 w-3/4 bg-slate-200 rounded mb-2"></div>
+    <div className="h-4 w-1/2 bg-slate-200 rounded mb-3"></div>
+    <div className="h-16 bg-slate-200 rounded mb-4"></div>
+    <div className="h-20 bg-slate-100 rounded-xl mb-4"></div>
+    <div className="flex gap-2">
+      <div className="h-10 flex-1 bg-slate-200 rounded-xl"></div>
+      <div className="h-10 flex-1 bg-slate-200 rounded-xl"></div>
+    </div>
+  </div>
+);
 
+const JobGrid = ({ jobs, onViewDetails, onApply, appliedJobs, isLoading }) => {
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
