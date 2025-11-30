@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: creator-board-backend
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: "cd backend && pip install -r requirements.txt"
+    startCommand: "cd backend && uvicorn server:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: MONGO_URL
+        sync: false
+      - key: DB_NAME
+        value: test_database
+      - key: CORS_ORIGINS
+        value: "*"
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: PYTHON_VERSION
+        value: 3.9.6
