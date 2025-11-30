@@ -22,16 +22,22 @@ ssl_context = ssl.create_default_context()
 ssl_context.check_hostname = False
 ssl_context.verify_mode = ssl.CERT_NONE
 
-client = AsyncIOMotorClient(
-    mongo_url,
-    tls=True,
-    tlsAllowInvalidCertificates=True,
-    serverSelectionTimeoutMS=30000,
-    connectTimeoutMS=30000,
-    socketTimeoutMS=30000,
-    retryWrites=True
-)
-db = client[os.environ['DB_NAME']]
+try:
+    client = AsyncIOMotorClient(
+        mongo_url,
+        tls=True,
+        tlsAllowInvalidCertificates=True,
+        serverSelectionTimeoutMS=30000,
+        connectTimeoutMS=30000,
+        socketTimeoutMS=30000,
+        retryWrites=True
+    )
+    db = client[os.environ['DB_NAME']]
+    logging.info("MongoDB connection initialized")
+except Exception as e:
+    logging.warning(f"MongoDB connection failed: {str(e)}")
+    client = None
+    db = None
 
 app = FastAPI()
 api_router = APIRouter(prefix="/api")
@@ -95,6 +101,9 @@ async def root():
 
 @api_router.post("/status", response_model=StatusCheck)
 async def create_status_check(input: StatusCheckCreate):
+    if db is None:
+        raise HTTPException(status_code=503, detail="Database unavailable")
+    
     status_dict = input.model_dump()
     status_obj = StatusCheck(**status_dict)
     
@@ -106,13 +115,20 @@ async def create_status_check(input: StatusCheckCreate):
 
 @api_router.get("/status", response_model=List[StatusCheck])
 async def get_status_checks():
-    status_checks = await db.status_checks.find({}, {"_id": 0}).to_list(1000)
+    if db is None:
+        return []
     
-    for check in status_checks:
-        if isinstance(check['timestamp'], str):
-            check['timestamp'] = datetime.fromisoformat(check['timestamp'])
-    
-    return status_checks
+    try:
+        status_checks = await db.status_checks.find({}, {"_id": 0}).to_list(1000)
+        
+        for check in status_checks:
+            if isinstance(check['timestamp'], str):
+                check['timestamp'] = datetime.fromisoformat(check['timestamp'])
+        
+        return status_checks
+    except Exception as e:
+        logger.warning(f"Failed to fetch status checks: {str(e)}")
+        return []
 
 @api_router.post("/generate-script", response_model=ScriptGenerationResponse)
 async def generate_script(request: ScriptGenerationRequest):
@@ -160,11 +176,14 @@ async def generate_job_posting(request: JobPostingRequest):
             visual_hook=script_data.get("visual_hook") if script_data else None,
         )
         
-        doc = job_posting.model_dump()
-        doc['created_at'] = doc['created_at'].isoformat()
-        result = await db.job_postings.insert_one(doc)
+        try:
+            doc = job_posting.model_dump()
+            doc['created_at'] = doc['created_at'].isoformat()
+            result = await db.job_postings.insert_one(doc)
+            logger.info(f"Job posting created: {result.inserted_id}")
+        except Exception as db_error:
+            logger.warning(f"Failed to save to database: {str(db_error)}")
         
-        logger.info(f"Job posting created: {result.inserted_id}")
         return job_posting
         
     except Exception as e:
@@ -173,16 +192,26 @@ async def generate_job_posting(request: JobPostingRequest):
 
 @api_router.get("/jobs", response_model=List[JobPosting])
 async def get_job_postings():
-    jobs = await db.job_postings.find({}, {"_id": 0}).to_list(1000)
+    if db is None:
+        return []
     
-    for job in jobs:
-        if isinstance(job.get('created_at'), str):
-            job['created_at'] = datetime.fromisoformat(job['created_at'])
-    
-    return jobs
+    try:
+        jobs = await db.job_postings.find({}, {"_id": 0}).to_list(1000)
+        
+        for job in jobs:
+            if isinstance(job.get('created_at'), str):
+                job['created_at'] = datetime.fromisoformat(job['created_at'])
+        
+        return jobs
+    except Exception as e:
+        logger.warning(f"Failed to fetch jobs: {str(e)}")
+        return []
 
 @api_router.get("/jobs/{job_id}", response_model=JobPosting)
 async def get_job_posting(job_id: str):
+    if db is None:
+        raise HTTPException(status_code=503, detail="Database unavailable")
+    
     job = await db.job_postings.find_one({"id": job_id}, {"_id": 0})
     
     if not job:
