@@ -53,7 +53,7 @@ const ScriptGeneratorModal = ({ isOpen, onClose, productName = '' }) => {
     setError('');
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:8000/api/generate-script', {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/generate-script`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

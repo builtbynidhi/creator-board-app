@@ -54,7 +54,7 @@ const JobGeneratorModal = ({ isOpen, onClose }) => {
     setError('');
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:8000/api/generate-job', {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/generate-job`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
