@@ -41,7 +41,7 @@ const JobGrid = ({ jobs, onViewDetails, onApply, appliedJobs, isLoading }) => {
           No jobs found
         </h3>
         <p className="text-slate-500 text-center max-w-md">
-          We couldn't find any jobs matching your search criteria. Try adjusting your filters or search terms.
+          We couldn&apos;t find any jobs matching your search criteria. Try adjusting your filters or search terms.
         </p>
       </div>
     );
