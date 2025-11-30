@@ -177,10 +177,13 @@ async def generate_job_posting(request: JobPostingRequest):
         )
         
         try:
-            doc = job_posting.model_dump()
-            doc['created_at'] = doc['created_at'].isoformat()
-            result = await db.job_postings.insert_one(doc)
-            logger.info(f"Job posting created: {result.inserted_id}")
+            if db is not None:
+                doc = job_posting.model_dump()
+                doc['created_at'] = doc['created_at'].isoformat()
+                result = await db.job_postings.insert_one(doc)
+                logger.info(f"Job posting created: {result.inserted_id}")
+            else:
+                logger.warning("Database unavailable, job not saved")
         except Exception as db_error:
             logger.warning(f"Failed to save to database: {str(db_error)}")
         
