@@ -4,6 +4,7 @@ from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
+import ssl
 from pathlib import Path
 from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Optional
@@ -16,12 +17,19 @@ ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
 mongo_url = os.environ['MONGO_URL']
+
+ssl_context = ssl.create_default_context()
+ssl_context.check_hostname = False
+ssl_context.verify_mode = ssl.CERT_NONE
+
 client = AsyncIOMotorClient(
     mongo_url,
+    tls=True,
     tlsAllowInvalidCertificates=True,
     serverSelectionTimeoutMS=30000,
     connectTimeoutMS=30000,
-    socketTimeoutMS=30000
+    socketTimeoutMS=30000,
+    retryWrites=True
 )
 db = client[os.environ['DB_NAME']]
 
