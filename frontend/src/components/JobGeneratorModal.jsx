@@ -63,12 +63,14 @@ const JobGeneratorModal = ({ isOpen, onClose }) => {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to generate job posting');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.detail || 'Failed to generate job posting');
       }
 
       const data = await response.json();
       setResult(data);
     } catch (err) {
+      console.error('Job generation error:', err);
       setError(err.message || 'Failed to generate job posting');
     } finally {
       setLoading(false);

@@ -62,12 +62,14 @@ const ScriptGeneratorModal = ({ isOpen, onClose, productName = '' }) => {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to generate script');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.detail || 'Failed to generate script');
       }
 
       const data = await response.json();
       setResult(data);
     } catch (err) {
+      console.error('Script generation error:', err);
       setError(err.message || 'Failed to generate script');
     } finally {
       setLoading(false);
