@@ -4,7 +4,7 @@ A modern job board application with AI-powered job posting and marketing script 
 
 ## 🌐 Live Demo
 
-- **Frontend**: [https://creator-board-app-cfp3-o1q2muitz.vercel.app/](https://creator-board-app-cfp3-o1q2muitz.vercel.app/)
+- **Frontend**: [https://creator-board-app-cfp3.vercel.app/](https://creator-board-app-cfp3.vercel.app/)
 - **Backend API**: [https://creator-board-backend.onrender.com](https://creator-board-backend.onrender.com)
 
 ## ✨ Features
