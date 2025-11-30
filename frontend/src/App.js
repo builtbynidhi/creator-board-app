@@ -6,24 +6,24 @@ import FilterBar from './components/FilterBar';
 import JobGrid from './components/JobGrid';
 import JobModal from './components/JobModal';
 import Toast from './components/Toast';
+import ScriptGeneratorModal from './components/ScriptGeneratorModal';
+import JobGeneratorModal from './components/JobGeneratorModal';
 import { mockJobs } from './data/mock';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Zap } from 'lucide-react';
 
 const Home = () => {
-  // State management
-  const [jobs] = useState(mockJobs);
+  const [jobs, setJobs] = useState(mockJobs);
   const [appliedJobs, setAppliedJobs] = useState([]);
   const [selectedJob, setSelectedJob] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [toast, setToast] = useState({ visible: false, message: '' });
-
-  // Filter states
+  const [isScriptGeneratorOpen, setIsScriptGeneratorOpen] = useState(false);
+  const [isJobGeneratorOpen, setIsJobGeneratorOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('newest');
   const [categoryFilter, setCategoryFilter] = useState('All Categories');
 
-  // Simulate initial loading
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoading(false);
@@ -31,7 +31,6 @@ const Home = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  // Auto-hide toast
   useEffect(() => {
     if (toast.visible) {
       const timer = setTimeout(() => {
@@ -41,11 +40,9 @@ const Home = () => {
     }
   }, [toast.visible]);
 
-  // Filter and sort jobs
   const filteredJobs = useMemo(() => {
     let result = [...jobs];
 
-    // Search filter
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       result = result.filter(
@@ -55,12 +52,10 @@ const Home = () => {
       );
     }
 
-    // Category filter
     if (categoryFilter && categoryFilter !== 'All Categories') {
       result = result.filter((job) => job.category === categoryFilter);
     }
 
-    // Sorting
     switch (sortBy) {
       case 'price-high':
         result.sort((a, b) => b.price - a.price);
@@ -81,13 +76,10 @@ const Home = () => {
     return result;
   }, [jobs, searchQuery, sortBy, categoryFilter]);
 
-  // Check if any filters are active
   const hasActiveFilters =
     searchQuery.trim() !== '' ||
     sortBy !== 'newest' ||
     categoryFilter !== 'All Categories';
-
-  // Handlers
   const handleViewDetails = (job) => {
     setSelectedJob(job);
     setIsModalOpen(true);
@@ -102,7 +94,6 @@ const Home = () => {
     if (!appliedJobs.includes(job.id)) {
       setAppliedJobs((prev) => [...prev, job.id]);
       
-      // Log application details
       console.log('Application submitted:', {
         jobId: job.id,
         jobTitle: job.title,
@@ -110,12 +101,34 @@ const Home = () => {
         timestamp: new Date().toISOString(),
       });
 
-      // Show toast
       setToast({
         visible: true,
         message: `Applied to "${job.title}" successfully!`,
       });
     }
+  };
+
+  const handleJobGenerated = (newJob) => {
+    const formattedJob = {
+      id: Date.now(),
+      title: newJob.job_title,
+      brandName: newJob.company,
+      category: 'Tech & Apps',
+      description: newJob.job_description,
+      price: 50000,
+      deadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      postedDate: new Date().toISOString(),
+      deliverables: newJob.key_responsibilities || [],
+      paymentTerms: `Salary: ${newJob.salary_range} | Location: ${newJob.location} | Type: ${newJob.job_type}`,
+      generatedJob: newJob,
+    };
+
+    setJobs((prev) => [formattedJob, ...prev]);
+
+    setToast({
+      visible: true,
+      message: `Job "${newJob.job_title}" has been added to the board!`,
+    });
   };
 
   const handleResetFilters = () => {
@@ -129,7 +142,23 @@ const Home = () => {
       <Navbar appliedCount={appliedJobs.length} />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Hero Section */}
+        <div className="mb-8 flex flex-wrap gap-3 items-center justify-center">
+          <button
+            onClick={() => setIsScriptGeneratorOpen(true)}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-lg font-medium hover:shadow-lg hover:shadow-purple-500/50 transition-all duration-300 hover:-translate-y-0.5"
+          >
+            <Sparkles className="w-4 h-4" />
+            Mini Ad-Script Generator
+          </button>
+          <button
+            onClick={() => setIsJobGeneratorOpen(true)}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg font-medium hover:shadow-lg hover:shadow-blue-500/50 transition-all duration-300 hover:-translate-y-0.5"
+          >
+            <Zap className="w-4 h-4" />
+            AI Job Generator
+          </button>
+        </div>
+
         <div className="mb-8 text-center">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-teal-100 text-teal-700 rounded-full text-sm font-medium mb-4">
             <Sparkles className="w-4 h-4" />
@@ -143,7 +172,6 @@ const Home = () => {
           </p>
         </div>
 
-        {/* Stats Bar */}
         <div className="flex flex-wrap justify-center gap-6 mb-8">
           <div className="flex items-center gap-2">
             <span className="text-2xl font-bold text-teal-600">{jobs.length}</span>
@@ -165,7 +193,6 @@ const Home = () => {
           </div>
         </div>
 
-        {/* Filter Bar */}
         <div className="mb-8">
           <FilterBar
             searchQuery={searchQuery}
@@ -179,7 +206,6 @@ const Home = () => {
           />
         </div>
 
-        {/* Results Count */}
         {!isLoading && (
           <div className="mb-6 flex items-center justify-between">
             <p className="text-slate-600">
@@ -193,7 +219,6 @@ const Home = () => {
           </div>
         )}
 
-        {/* Job Grid */}
         <JobGrid
           jobs={filteredJobs}
           onViewDetails={handleViewDetails}
@@ -203,7 +228,6 @@ const Home = () => {
         />
       </main>
 
-      {/* Footer */}
       <footer className="border-t border-slate-200 mt-16 py-8 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <p className="text-slate-500 text-sm">
@@ -212,7 +236,6 @@ const Home = () => {
         </div>
       </footer>
 
-      {/* Job Details Modal */}
       <JobModal
         job={selectedJob}
         isOpen={isModalOpen}
@@ -221,7 +244,17 @@ const Home = () => {
         isApplied={selectedJob ? appliedJobs.includes(selectedJob.id) : false}
       />
 
-      {/* Toast Notification */}
+      <ScriptGeneratorModal
+        isOpen={isScriptGeneratorOpen}
+        onClose={() => setIsScriptGeneratorOpen(false)}
+      />
+
+      <JobGeneratorModal
+        isOpen={isJobGeneratorOpen}
+        onClose={() => setIsJobGeneratorOpen(false)}
+        onJobGenerated={handleJobGenerated}
+      />
+
       <Toast
         message={toast.message}
         isVisible={toast.visible}
