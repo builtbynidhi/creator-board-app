@@ -353,7 +353,7 @@ const JobGeneratorModal = ({ isOpen, onClose, onJobGenerated }) => {
                   onClick={handleDone}
                   className="flex-1 h-11 rounded-lg bg-blue-600 hover:bg-blue-700"
                 >
-                  Done
+                  Post job to Board
                 </Button>
               </div>
             </div>
